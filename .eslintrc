@@ -1,0 +1,37 @@
+{
+	"env": {
+		"browser": true,
+		"es6": true
+	},
+	"parser": "@typescript-eslint/parser",
+	"plugins": ["@typescript-eslint",  "prettier"],
+	"extends": [
+		"plugin:@typescript-eslint/recommended",
+		"plugin:prettier/recommended"
+	],
+	"parserOptions": {
+		"project": "./tsconfig.json",
+		"createDefaultProgram": false
+	},
+	"settings": {
+		"import/resolver": {
+			"node": {
+				"extensions": [
+					".js",
+					".jsx",
+					".ts",
+					".tsx",
+					".d.ts"
+				]
+			}
+		}
+	},
+	"rules": {
+		"jsx-quotes": ["error", "prefer-double"],
+		"@typescript-eslint/indent": ["warn", "tab"],
+		"@typescript-eslint/quotes": ["error", "single"],
+		"@typescript-eslint/key-spacing": ["warn", {"beforeColon": false}],
+		"@typescript-eslint/keyword-spacing": ["warn", { "before": true }],
+		"@typescript-eslint/no-extra-semi": "warn"
+	}
+}

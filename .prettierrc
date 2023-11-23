@@ -1,0 +1,13 @@
+{
+	"trailingComma": "all",
+	"parser": "babel-ts",
+	"tabWidth": 4,
+	"useTabs": true,
+	"singleQuote": true,
+	"jsxSingleQuote": false,
+	"semicolons": true,
+	"bracketSpacing": false,
+	"bracketSameLine": false,
+	"printWidth": 200,
+	"endOfLine": "crlf"
+}
