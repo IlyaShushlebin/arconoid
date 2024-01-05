@@ -1,7 +1,7 @@
 .GameArea {
   position: relative;
-  width: 35em;
-  height: 35em;
+  width: 600px;
+  height: 600px;
   margin: 1em;
   background-blend-mode: screen;
   background-image: radial-gradient(circle farthest-corner at center top, #FFF 0%, #D8DFE9 100%);

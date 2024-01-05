@@ -10,32 +10,50 @@ export type DirectionMovementType = {
 const GameArea = () => {
 	const [gameStarted, setGameStarted] = useState<boolean>(false);
 	const [directionMovement, setDirectionMovement] = useState<DirectionMovementType>({x: 0, y: 0});
+	const [grid, setGrid] = useState<{c: string; a: boolean}[][]>([
+		[
+			{c: 'darkblue', a: true},
+			{c: 'cyan', a: true},
+			{c: 'blueviolet', a: true},
+			{c: 'darkblue', a: true},
+		],
+		[
+			{c: 'cyan', a: true},
+			{c: 'blueviolet', a: true},
+			{c: 'darkblue', a: true},
+			{c: 'cyan', a: true},
+		],
+	]);
 
-	const gameAreaRef = React.createRef<HTMLDivElement>();
-	const nucleusRef = React.createRef<HTMLDivElement>();
-	const platformRef = React.createRef<HTMLDivElement>();
+	const canvasRef = React.createRef<HTMLCanvasElement>();
 
-	const movingNucleusTimerRef = useRef<NodeJS.Timer>();
+	const platformOptions = {
+		w: 120,
+		h: 14,
+		c: 'orange',
+		dx: 10,
+	};
 
-	const speed = 20;
+	const ballOptions = {
+		r: 10,
+		c: 'red',
+	};
 
 	useEffect(() => {
-		resetNucleusPosition();
-
-		return () => {
-			clearInterval(movingNucleusTimerRef.current);
-		};
+		drawGame();
 	}, []);
 
 	//------------------------------------------------------------------------------------------------------------------
 
-	const onGameAreaMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+	const onCanvasMouseMove = (event: MouseEvent) => {
 		movePlatform(event);
 	};
 
-	const onGameAreaClick = () => {
+	const onCanvasClick = (event: MouseEvent) => {
 		if (!gameStarted) {
 			setGameStarted(true);
+			console.log(gameStarted);
+
 			startGame();
 		}
 	};
@@ -46,31 +64,181 @@ const GameArea = () => {
 
 	//------------------------------------------------------------------------------------------------------------------
 
-	const startGame = () => {
-		initDirection();
-		debugger;
-		const refs = {nucleusRef, gameAreaRef};
-		movingNucleusTimerRef.current = setInterval<any[]>(
-			(refs: any[]) => {
-				console.error(refs);
-			},
-			speed,
-			refs,
-		);
+	const drawGame = () => {
+		const holst = getHolst();
+		if (holst === null) {
+			return;
+		}
+
+		const {canvas} = holst;
+		canvas.addEventListener('mousemove', onCanvasMouseMove);
+		canvas.addEventListener('click', onCanvasClick);
+
+		draw();
 	};
 
-	const movingNucleus = (ref: RefObject<HTMLDivElement>, ref2: RefObject<HTMLDivElement>) => {
-		const nucleus = ref?.current;
-		const gameArea = ref2.current;
-		console.error('gameArea', gameArea);
-
-		if (nucleus && gameArea) {
-			const nucleusRect = nucleus.getBoundingClientRect();
-			const gameAreaRect = gameArea.getBoundingClientRect();
-
-			nucleus.style.left = `${nucleusRect.left + directionMovement.x - gameAreaRect.left}px`;
-			nucleus.style.top = `${nucleusRect.top + directionMovement.y - gameAreaRect.top}px`;
+	const drawPlatform = ({x, y}: {x: number; y: number}) => {
+		const holst = getHolst();
+		if (holst === null) {
+			return;
 		}
+		const {context} = holst;
+
+		const {w: platformW, h: platformH, c: platformColor} = platformOptions;
+
+		context.beginPath();
+		context.rect(x, y, platformW, platformH);
+		context.fillStyle = platformColor;
+		context.fill();
+		context.closePath();
+	};
+
+	const drawBall = ({x, y}: {x: number; y: number}) => {
+		const holst = getHolst();
+		if (holst === null) {
+			return;
+		}
+		const {context} = holst;
+
+		const {r: ballRadius, c: ballColor} = ballOptions;
+
+		context.beginPath();
+		context.arc(x, y, ballRadius, 0, Math.PI * 2);
+		context.fillStyle = ballColor;
+		context.fill();
+		context.closePath();
+	};
+
+	const drawGrid = () => {
+		const holst = getHolst();
+		if (holst === null) {
+			return;
+		}
+
+		const {canvas, context} = holst;
+		let cellY = 10;
+		const cellH = 10;
+		const cellMargin = 2;
+
+		for (let i = 0, len = grid.length; i < len; i++) {
+			const row = grid[i];
+			const cellCount = row.length;
+			const cellW = canvas.width / cellCount - cellMargin;
+			let cellX = 1;
+			for (let k = 0; k < cellCount; k++) {
+				const cellData = row[k];
+				if (!cellData.a) {
+					cellX += cellW + cellMargin;
+					continue;
+				}
+				context.beginPath();
+				context.rect(cellX, cellY, cellW, cellH);
+				context.fillStyle = cellData.c;
+				context.fill();
+				context.closePath();
+
+				cellX += cellW + cellMargin;
+			}
+			cellY += cellH + cellMargin;
+		}
+	};
+
+	const draw = () => {
+		const holst = getHolst();
+		if (holst === null) {
+			return;
+		}
+		const {canvas, context} = holst;
+
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		drawGrid();
+		drawBall(getInitialBallPosition());
+		drawPlatform(getInitialPlatformPosition());
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+
+	const getInitialBallPosition = () => {
+		let y = 0;
+		let x = 0;
+		const holst = getHolst();
+		if (holst !== null) {
+			const {canvas} = holst;
+			const {r: ballRadius} = ballOptions;
+			x = canvas.width / 2;
+			y = canvas.height - platformOptions.h - ballRadius;
+		}
+		return {x, y};
+	};
+
+	const getInitialPlatformPosition = () => {
+		let x = 0;
+		let y = 0;
+
+		const holst = getHolst();
+		if (holst !== null) {
+			const {canvas} = holst;
+			const {w: platformW, h: platformH} = platformOptions;
+			x = (canvas.width - platformW) / 2;
+			y = canvas.height - platformH;
+		}
+		return {x, y};
+	};
+
+	const getHolst = () => {
+		const canvas = canvasRef.current;
+		const context = canvas?.getContext('2d');
+		return !!canvas && !!context ? {canvas, context} : null;
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+
+	const movePlatform = (event: MouseEvent) => {
+		if (!gameStarted) {
+			return;
+		}
+		const holst = getHolst();
+		if (holst === null) {
+			return;
+		}
+		const {canvas, context} = holst;
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		const {pageX} = event;
+
+		const {w: platformW, h: platformH} = platformOptions;
+		const canvasRect = canvas.getBoundingClientRect();
+		const platformY = canvas.height - platformH;
+		let platformX = pageX - canvasRect.x - platformW / 2;
+		if (platformX < 0) {
+			platformX = 0;
+		} else if (platformX + platformW > canvas.width) {
+			platformX = canvas.width - platformW;
+		}
+
+		drawPlatform({x: platformX, y: platformY});
+	};
+
+	const gameAnimation = () => {
+		if (!gameStarted) {
+			return;
+		}
+		const holst = getHolst();
+		if (holst === null) {
+			return;
+		}
+
+		const {x: dx, y: dy} = directionMovement;
+		drawBall({x: dx, y: dy});
+
+		requestAnimationFrame(gameAnimation);
+	};
+
+	//------------------------------------------------------------------------------------------------------------------
+
+	const startGame = () => {
+		initDirection();
+		requestAnimationFrame(gameAnimation);
 	};
 
 	const initDirection = () => {
@@ -89,84 +257,14 @@ const GameArea = () => {
 
 	const stopNucleus = () => {
 		setGameStarted(false);
-		if (movingNucleusTimerRef.current) {
-			clearInterval(movingNucleusTimerRef.current);
-		}
 		clearDirection();
-		resetNucleusPosition();
-	};
-
-	//------------------------------------------------------------------------------------------------------------------
-
-	const movePlatform = (event: React.MouseEvent<HTMLDivElement>) => {
-		const gameArea = gameAreaRef.current;
-		const nucleus = nucleusRef.current;
-		const platform = platformRef.current;
-		if (!gameArea || !nucleus || !platform) {
-			return;
-		}
-
-		const {clientX} = event;
-		const gameAreaRect = gameArea.getBoundingClientRect();
-		const platformRect = platform.getBoundingClientRect();
-		const mousePosInGameAreaX = clientX - gameAreaRect.left;
-		const pos = mousePosInGameAreaX - platformRect.width / 2;
-		const posPlatformX = pos < 0 ? 0 : pos + platformRect.width <= gameAreaRect.width ? pos : gameAreaRect.width - platformRect.width;
-		platform.style.left = `${posPlatformX}px`;
-		if (!gameStarted) {
-			nucleusToPlatform();
-		}
-	};
-
-	//------------------------------------------------------------------------------------------------------------------
-
-	const centerPlatform = () => {
-		const platformRect = platformRef.current?.getBoundingClientRect();
-		const gameAreaRect = gameAreaRef.current?.getBoundingClientRect();
-		if (!gameAreaRect || !platformRect) {
-			return;
-		}
-
-		const posPlatformX = gameAreaRect.width / 2 - platformRect.width / 2;
-		if (platformRef.current) {
-			platformRef.current.style.left = `${posPlatformX}px`;
-		}
-	};
-
-	const nucleusToPlatform = () => {
-		const platformRect = platformRef.current?.getBoundingClientRect();
-		const nucleusRect = nucleusRef.current?.getBoundingClientRect();
-		const gameAreaRect = gameAreaRef.current?.getBoundingClientRect();
-		if (!nucleusRect || !platformRect || !gameAreaRect) {
-			return;
-		}
-
-		const centerPosPlatformX = platformRect.width / 2 + platformRect.left - gameAreaRect.left;
-		const posNucleusX = centerPosPlatformX - nucleusRect.width / 2;
-		const posNucleusY = platformRect.top - gameAreaRect.top - nucleusRect.height;
-		if (nucleusRef.current) {
-			nucleusRef.current.style.left = `${posNucleusX}px`;
-			nucleusRef.current.style.top = `${posNucleusY}px`;
-		}
-	};
-
-	const resetNucleusPosition = () => {
-		centerPlatform();
-		nucleusToPlatform();
 	};
 
 	//------------------------------------------------------------------------------------------------------------------
 
 	return (
 		<>
-			<div ref={gameAreaRef} className={classNames('GameArea', {game_stared: gameStarted})} onMouseMove={onGameAreaMouseMove} onClick={onGameAreaClick}>
-				<div className="box" />
-				<div ref={nucleusRef} className="nucleus" />
-				<div className="platform-holder">
-					<div ref={platformRef} className="platform" />
-				</div>
-			</div>
-
+			<canvas ref={canvasRef} className={classNames('GameArea', {game_stared: gameStarted})} width="600" height="600" />
 			<div className={'stop-button'} onClick={onStopGame} style={{width: '100px', height: '30px', backgroundColor: 'red', left: 0, position: 'absolute'}}>
 				"Stop Game"
 			</div>
