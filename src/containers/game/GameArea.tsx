@@ -1,6 +1,8 @@
 import '../../css/less/GameArea.css';
 import React, {RefObject, useEffect, useRef, useState} from 'react';
 import classNames from 'classnames';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState, startGame as updateStartGame, stopGame as updateStopGame} from '../../store/store';
 
 export type DirectionMovementType = {
 	x: number;
@@ -8,7 +10,9 @@ export type DirectionMovementType = {
 };
 
 const GameArea = () => {
-	const [gameStarted, setGameStarted] = useState<boolean>(false);
+	const gameStarted = useSelector((state: RootState) => state.gameStart.value);
+	const dispatch = useDispatch();
+
 	const [directionMovement, setDirectionMovement] = useState<DirectionMovementType>({x: 0, y: 0});
 	const [grid, setGrid] = useState<{c: string; a: boolean}[][]>([
 		[
@@ -49,9 +53,9 @@ const GameArea = () => {
 		movePlatform(event);
 	};
 
-	const onCanvasClick = (event: MouseEvent) => {
+	const onCanvasClick = () => {
 		if (!gameStarted) {
-			setGameStarted(true);
+			dispatch(updateStartGame());
 			console.log(gameStarted);
 
 			startGame();
@@ -72,7 +76,6 @@ const GameArea = () => {
 
 		const {canvas} = holst;
 		canvas.addEventListener('mousemove', onCanvasMouseMove);
-		canvas.addEventListener('click', onCanvasClick);
 
 		draw();
 	};
@@ -220,6 +223,7 @@ const GameArea = () => {
 	};
 
 	const gameAnimation = () => {
+		console.log('>>> gameAnimation', gameStarted);
 		if (!gameStarted) {
 			return;
 		}
@@ -256,7 +260,7 @@ const GameArea = () => {
 	};
 
 	const stopNucleus = () => {
-		setGameStarted(false);
+		dispatch(updateStopGame());
 		clearDirection();
 	};
 
@@ -267,6 +271,9 @@ const GameArea = () => {
 			<canvas ref={canvasRef} className={classNames('GameArea', {game_stared: gameStarted})} width="600" height="600" />
 			<div className={'stop-button'} onClick={onStopGame} style={{width: '100px', height: '30px', backgroundColor: 'red', left: 0, position: 'absolute'}}>
 				"Stop Game"
+			</div>
+			<div className={'start-button'} onClick={onCanvasClick} style={{width: '100px', height: '30px', backgroundColor: 'green', left: 0, top: '35px', position: 'absolute'}}>
+				"Start Game"
 			</div>
 		</>
 	);
