@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@pixi/react": "^7.1.1",
     "@reduxjs/toolkit": "^2.0.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -12,12 +13,14 @@
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "classnames": "^2.3.2",
+    "pixi.js": "^7.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^9.0.4",
     "react-router": "^6.15.0",
     "react-router-dom": "^6.15.0",
     "react-scripts": "5.0.1",
+    "throttle-debounce": "^5.0.0",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
@@ -41,6 +44,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.22.10",
+    "@types/throttle-debounce": "^5.0.2",
     "concurrently": "^8.2.0",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",

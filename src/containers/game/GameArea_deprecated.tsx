@@ -2,15 +2,15 @@ import '../../css/less/GameArea.css';
 import React, {RefObject, useEffect, useRef, useState} from 'react';
 import classNames from 'classnames';
 import {useDispatch, useSelector} from 'react-redux';
-import {RootState, startGame as updateStartGame, stopGame as updateStopGame} from '../../store/store';
+import {RootState, startGame as updateStartGame, stopGame as updateStopGame} from '../../store';
 
 export type DirectionMovementType = {
 	x: number;
 	y: number;
 };
 
-const GameArea = () => {
-	const gameStarted = useSelector((state: RootState) => state.gameStart.value);
+const GameArea_deprecated = () => {
+	const gameStarted = useSelector((state: RootState) => state.arconoidGame.gameStarted);
 	const dispatch = useDispatch();
 
 	const [directionMovement, setDirectionMovement] = useState<DirectionMovementType>({x: 0, y: 0});
@@ -279,4 +279,4 @@ const GameArea = () => {
 	);
 };
 
-export default GameArea;
+export default GameArea_deprecated;

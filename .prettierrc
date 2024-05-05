@@ -3,7 +3,7 @@
 	"parser": "babel-ts",
 	"tabWidth": 4,
 	"useTabs": true,
-	"singleQuote": false,
+	"singleQuote": true,
 	"jsxSingleQuote": false,
 	"semicolons": true,
 	"bracketSpacing": false,

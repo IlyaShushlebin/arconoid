@@ -1,11 +1,12 @@
 import '../../css/less/GameRoot.css';
-import GameArea from './GameArea';
+import GameArea_deprecated from './GameArea_deprecated';
 import GameMenu from './GameMenu';
+import GameScene from './GameScene';
 
 const GameRoot = () => {
 	return (
 		<div className={'GameRoot'}>
-			<GameArea />
+			<GameScene />
 			<GameMenu />
 		</div>
 	);

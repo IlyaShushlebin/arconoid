@@ -1,1 +1,3 @@
-export type UpdateGameStartStateType = {value: boolean};
+import {PointType} from './defs';
+
+export type ArconoidGameStateType = {gameStarted: boolean; platformPoint: PointType; ballPoint: PointType};
